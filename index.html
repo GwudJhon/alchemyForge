@@ -158,7 +158,7 @@
 
         // Update cell display with symbol and bonus
         function updateCell(row, col) {
-            const cellEl = document.querySelector(.grid-cell[data-row="${row}"][data-col="${col}"]);
+            const cellEl = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
             const cellData = mainGrid[row][col];
             
             cellEl.textContent = cellData.type;
@@ -173,18 +173,76 @@
             if (cellData.bonus > 0) {
                 const bonusEl = document.createElement('span');
                 bonusEl.className = 'bonus';
-                bonusEl.textContent = +${cellData.bonus};
+                bonusEl.textContent = `+${cellData.bonus}`;
                 cellEl.appendChild(bonusEl);
             }
         }
 
+        function getHighestUnlockedElementIndex() {
+            let maxIndex = -1;
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    const type = mainGrid[row][col].type;
+                    const index = ELEMENT_PROGRESSION.indexOf(type);
+                    if (index > maxIndex) {
+                        maxIndex = index;
+                    }
+                }
+            }
+            return maxIndex;
+        }
+
+
         // Generate next elements with weighted probabilities
         function getRandomElement() {
-            const random = Math.random() * 100;
-            if (random < 90) return ELEMENTS.A; // 90% chance
-            if (random < 97) return ELEMENTS.B; // 7% chance (90-97)
-            return ELEMENTS.C;                // 3% chance (97-100)
+            const highestUnlockedIndex = getHighestUnlockedElementIndex();
+            const possibleElements = [];
+
+            // Start with newest element having base weight
+            if (highestUnlockedIndex >= 0) {
+                possibleElements.push({
+                    element: ELEMENT_PROGRESSION[highestUnlockedIndex],
+                    weight: 5
+                });
+            } else {
+                // First ever element
+                return ELEMENT_PROGRESSION[0];
+            }
+
+            // Add older elements with increasing weights
+            let currentWeight = 5;
+            for (let i = highestUnlockedIndex - 1; i >= 0; i--) {
+                currentWeight *= 2;
+                possibleElements.push({
+                    element: ELEMENT_PROGRESSION[i],
+                    weight: currentWeight
+                });
+            }
+
+            // Normalize weights
+            const totalWeight = possibleElements.reduce((sum, el) => sum + el.weight, 0);
+            // set the last value in possibleElements[] to be equal to totalWeight
+            possibleElements[possibleElements.length - 1].weight += 100 - totalWeight;
+            rand = Math.random() * 100; // Random number between 0 and 100
+            console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
+            console.log('Picked value: ' + rand); // Debugging output
+            // pick the element that has the rand number in its weight range
+            let cumulativeWeight = 0;
+            for (let i = 0; i < possibleElements.length; i++) {
+                cumulativeWeight += possibleElements[i].weight;
+                if (rand <= cumulativeWeight) {
+                    console.log('Picked element: ' + possibleElements[i].element); // Debugging output
+                    return possibleElements[i].element;
+                }
+            }
+
+            console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
+            
+
+            return ELEMENT_PROGRESSION[0]; // Fallback
         }
+
+
 
         // Initialize and display next elements
         function initializeNextElements() {
@@ -246,7 +304,7 @@
 
             while (queue.length > 0) {
                 const { row, col } = queue.shift();
-                const key = ${row},${col};
+                const key = `${row},${col}`;
                 if (visited.has(key)) continue;
 
                 visited.add(key);
@@ -267,7 +325,7 @@
                         newRow >= 0 && newRow < gridSize &&
                         newCol >= 0 && newCol < gridSize &&
                         mainGrid[newRow][newCol].type === ELEMENT &&
-                        !visited.has(${newRow},${newCol})
+                        !visited.has(`${newRow},${newCol}`)
                     ) {
                         queue.push({ row: newRow, col: newCol });
                     }
@@ -299,7 +357,7 @@
                 setTimeout(() => {
                     const first = connected[0];
                     const newType = getNextElement(ELEMENT);
-                    
+
                     mainGrid[first.row][first.col] = {
                         type: newType,
                         bonus: totalBonus
