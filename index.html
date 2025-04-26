@@ -39,6 +39,13 @@
             background-color: black;
             border: 2px solid #333;
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        .bottom-grid-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            margin-top: 20px;
         }
         .grid-cell {
             position: relative;
@@ -116,6 +123,7 @@
 <body>
     <div class="next-elements-container" id="nextElements"></div>
     <div class="grid-container" id="mainGrid"></div>
+    <div class="grid-container" id="bottomGrid"></div>
 
     <script>
         const gridSize = 6;
@@ -128,7 +136,8 @@
             C: '🟢',
             D: '🟡',
             E: '🔶',
-            F: '🔷'
+            F: '🔷',
+            G: '💎',
         };
         
         // Define the progression order
@@ -138,18 +147,54 @@
             ELEMENTS.C,
             ELEMENTS.D,
             ELEMENTS.E,
-            ELEMENTS.F
+            ELEMENTS.F,
+            ELEMENTS.G
         ];
+
+        const FUSIONS = {
+            A: "🪐",
+            B: "🌕",
+            C: "🌑",
+            D: "☄️",
+            E: "🌍"
+        };
         
         const MinConnections = 5;
 
         // Initialize the grid
         function initializeGrid() {
             const gridDiv = document.getElementById('mainGrid');
+            const bottomGridDiv = document.getElementById('bottomGrid');
             const nextElementsDiv = document.getElementById('nextElements');
 
             gridDiv.innerHTML = '';
+            bottomGridDiv.innerHTML = ''; // Clear previous elements
             nextElementsDiv.innerHTML = ''; // Clear previous elements
+
+            for (let i = 0; i < gridSize; i++) {
+                const bottomCell = document.createElement('div');
+                bottomCell.className = 'grid-cell';
+                bottomCell.textContent = FUSIONS.A;
+                bottomGridDiv.appendChild(bottomCell);
+
+                // add onclick event to bottom cell to select it, making it bobble
+                bottomCell.addEventListener('click', function() {
+                    if (isAnimating) return; // Prevent clicks during animation
+                    // check if other cell are already selected, if so, remove the class from them
+                    const allBottomCells = bottomGridDiv.querySelectorAll('.grid-cell');
+                    allBottomCells.forEach(cell => {
+                        if (cell !== bottomCell) {
+                            cell.classList.remove('bobble-strong');
+                        }
+                    });
+
+                    if (bottomCell.classList.contains('bobble-strong')) {
+                        bottomCell.classList.remove('bobble-strong');
+                    } else {
+                        bottomCell.classList.add('bobble-strong');
+                    }
+                });
+            }
             
             // Create empty grid structure
             for (let i = 0; i < gridSize; i++) {
@@ -157,7 +202,7 @@
                 for (let j = 0; j < gridSize; j++) {
                     if (i < 4 && j === 0) {
                         mainGrid[i][j] = {
-                            type: ELEMENTS.D,
+                            type: ELEMENTS.E,
                             bonus: 0
                         };
                     } else {
@@ -276,7 +321,7 @@
             // Add older elements with increasing weights
             let currentWeight = 5;
             for (let i = highestUnlockedIndex - 1; i >= 0; i--) {
-                currentWeight *= 2;
+                currentWeight *= 1.5;
                 possibleElements.push({
                     element: ELEMENT_PROGRESSION[i],
                     weight: currentWeight
@@ -295,59 +340,31 @@
             if (possibleElements.length > 1){
                 if (possibleElements[possibleElements.length - 1].weight < possibleElements[possibleElements.length - 2].weight) {
                     possibleElements[possibleElements.length - 2].weight += possibleElements[possibleElements.length - 1].weight;
-
-                    // since after the pop the element will never appear again, automatically convert all of the same element on the main grid to the next one in the progression
-                    for (let row = 0; row < gridSize; row++) {
-                        for (let col = 0; col < gridSize; col++) {
-                            if (mainGrid[row][col].type === possibleElements[possibleElements.length - 1].element) {
-                                mainGrid[row][col].type = getNextElement(possibleElements[possibleElements.length - 1].element);
-                                updateCell(row, col);
-                            }
-                        }
-                    }
-
                     possibleElements.pop();
-
-                    
                 }
             }
 
             return possibleElements; // <-- This was missing!
         }
 
-        function updateGrid(){
-            console.log('Updating grid...');
-
-            let possibleElements = possibleElementsFunc();
-
-            console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
-        }
-
-
         // Generate next elements with weighted probabilities
         function getRandomElement() {
             const possibleElements = possibleElementsFunc();
-            updateGrid();
-            rand = Math.floor(Math.random() * 100); // Random integer between 0 and 99
-            console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
-            console.log('Picked value: ' + rand); // Debugging output
+            rand = Math.random() * 100; // Random integer between 0 and 99
+            //console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
+            //console.log('Picked value: ' + rand); // Debugging output
             // pick the element that has the rand number in its weight range
             let cumulativeWeight = 0;
             for (let i = 0; i < possibleElements.length; i++) {
                 cumulativeWeight += possibleElements[i].weight;
                 if (rand <= cumulativeWeight) {
-                    console.log('Picked element: ' + possibleElements[i].element); // Debugging output
+                    //console.log('Picked element: ' + possibleElements[i].element); // Debugging output
                     return possibleElements[i].element;
                 }
             }
-
-            console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
-            
-
+            //console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
             return ELEMENT_PROGRESSION[0]; // Fallback
         }
-
-
 
         // Initialize and display next elements
         function initializeNextElements() {
@@ -387,7 +404,30 @@
         // Toggle X in a cell
         function toggleX(row, col, cellElement) {
             if (isAnimating) return; // Prevent clicks during animation
-            if (mainGrid[row][col].type === ELEMENTS.EMPTY) {
+            if (mainGrid[row][col].type !== ELEMENTS.EMPTY) return; // ignore clicks on non-empty cells
+
+            // check if a bottom cell is selected, if so, place the elmente from the bottom cell in the place and remove the bottom cell content
+            const allBottomCells = document.querySelectorAll('#bottomGrid .grid-cell');
+            let selectedBottomCell = null;
+            
+            allBottomCells.forEach(cell => {
+                if (cell.classList.contains('bobble-strong')) {
+                    console.log("ok");
+                    selectedBottomCell = cell;
+                }
+            });
+
+            if (selectedBottomCell) {
+                const selectedElement = selectedBottomCell.textContent;
+                selectedBottomCell.classList.remove('bobble-strong');
+                selectedBottomCell.textContent = FUSIONS.A; // Reset bottom cell to default
+                mainGrid[row][col] = {
+                    type: selectedElement,  // Start with first element
+                    bonus: 0
+                };
+                updateCell(row, col);
+                checkPossibleMerges(row, col, selectedElement); 
+            } else if (mainGrid[row][col].type === ELEMENTS.EMPTY) {
                 const elementToPlace = getNextElementToPlace();
                 mainGrid[row][col] = {
                     type: elementToPlace,  // Start with first element
@@ -485,8 +525,6 @@
                         checkPossibleMerges(first.row, first.col, newType);
                     }
                 }, connected.length * 100);
-                
-                updateGrid();
             }
         }
 
