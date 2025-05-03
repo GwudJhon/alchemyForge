@@ -812,9 +812,80 @@
 
         const RECEITA = {
             "FT":[
-                    {"A": 1, "B": 1, "C": 1, "D": 1}
+                    {"A": 1, "B": 1}
             ],
         }
+
+        function receitaInitializer() {
+            let BASES = [];
+            let FUSIONS = [];
+            for (let key in ELEMENTS) {
+                if (key === 'EMPTY') continue;
+                if (key.length > 1) {
+                    FUSIONS.push(key);
+                } else {
+                    BASES.push(key);
+                }
+            }
+
+            for (let item of FUSIONS) {
+                if (RECEITA[item]) continue; // Skip if already defined
+                
+                let recipe = {}; // Start with empty object
+                let recipeDone = false;
+                
+                while (!recipeDone) {
+                    // Add random base element
+                    const randomBase = BASES[Math.floor(Math.random() * BASES.length)];
+                    const randomQuantity = Math.floor(Math.random() * 4) + 1;
+                    
+                    // Add to recipe object
+                    recipe[randomBase] = (recipe[randomBase] || 0) + randomQuantity;
+
+                    // Check if we can replace any bases with existing fusions
+                    for (let fusion in RECEITA) {
+                        if (fusion === item) continue;
+                        
+                        const fusionIngredients = RECEITA[fusion][0]; // Get the single recipe object
+                        let canReplace = true;
+                        
+                        // Check if current recipe contains all required ingredients
+                        for (let base in fusionIngredients) {
+                            if (!recipe[base] || recipe[base] < fusionIngredients[base]) {
+                                canReplace = false;
+                                break;
+                            }
+                        }
+                        
+                        if (canReplace) {
+                            // Remove the used bases
+                            for (let base in fusionIngredients) {
+                                recipe[base] -= fusionIngredients[base];
+                                if (recipe[base] === 0) {
+                                    delete recipe[base];
+                                }
+                            }
+                            
+                            // Add the fusion (quantity 1)
+                            recipe[fusion] = (recipe[fusion] || 0) + 1;
+                            break;
+                        }
+                    }
+
+                    // Continue until we have at least 2 ingredients
+                    recipeDone = Object.keys(recipe).length >= 2;
+                }
+                
+                // Store as array with single object
+                RECEITA[item] = [recipe];
+            }
+
+            console.log("Generated RECEITA:", RECEITA);
+        }
+        
+        
+        receitaInitializer();
+
         
         // Define the progression order
         const ELEMENT_PROGRESSION = [
