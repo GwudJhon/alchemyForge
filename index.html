@@ -14,6 +14,7 @@
             margin: 0;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
+            overflow: hidden; /* Prevent scrollbars */
         }
         .next-elements-container {
             display: flex;
@@ -39,7 +40,7 @@
             background-color: black;
             border: 2px solid #333;
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            margin-bottom: 30px;
+            z-index: 0; /* Lower than divider */
         }
         .bottom-grid-container {
             display: grid;
@@ -59,7 +60,24 @@
             color: white;
             font-size: 24px;
             aspect-ratio: 1;
-            transition: background-color 0.2s;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out;
+        }
+        .grid-cell::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #333; /* Pillar color */
+            bottom: 0;
+            transform: translateZ(-30px); /* Depth of pillar */
+            transform-origin: bottom;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .grid-cell.bounce-animation {
+            box-shadow: 0 10px 15px rgba(0,0,0,0.2);
         }
         .grid-cell:hover {
             background-color: #222;
@@ -118,17 +136,647 @@
         .sparkle:nth-child(3) { animation-delay: 0.7s; }
         .sparkle:nth-child(4) { animation-delay: 1.4s; }
         .sparkle:nth-child(5) { animation-delay: 2s; }
+
+        @keyframes bounceWave {
+            0% {
+                transform: translateY(0);
+            }
+            15% {
+                transform: translateY(-30px); /* Very high first bounce */
+            }
+            30% {
+                transform: translateY(10px); /* Deep first fall */
+            }
+            45% {
+                transform: translateY(-15px); /* Second bounce (smaller) */
+            }
+            60% {
+                transform: translateY(8px); /* Second fall */
+            }
+            75% {
+                transform: translateY(-5px); /* Tiny third bounce */
+            }
+            90% {
+                transform: translateY(2px); /* Almost settled */
+            }
+            100% {
+                transform: translateY(0); /* Final rest */
+            }
+        }
+
+        /* Add easing for more natural bounce */
+        .bounce-animation {
+            animation: bounceWave 2s cubic-bezier(0.28, 0.84, 0.42, 1);
+        }
+
+        @keyframes bounceWave {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            15% {
+                transform: translateY(-30px) scale(1.1); /* Very high first bounce */
+            }
+            30% {
+                transform: translateY(10px) scale(0.95); /* Deep first fall */
+            }
+            45% {
+                transform: translateY(-15px) scale(1.05); /* Second bounce (smaller) */
+            }
+            60% {
+                transform: translateY(8px) scale(0.98); /* Second fall */
+            }
+            75% {
+                transform: translateY(-5px) scale(1.02); /* Tiny third bounce */
+            }
+            90% {
+                transform: translateY(2px) scale(0.99); /* Almost settled */
+            }
+            100% {
+                transform: translateY(0) scale(1); /* Final rest */
+            }
+        }
+
+        /* Add easing for more natural bounce */
+        .bounce-animation {
+            animation: bounceWave 1s cubic-bezier(0.28, 0.84, 0.42, 1);
+        }
+
+        .shockwave {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: shockwave 0.8s ease-out;
+        }
+
+        .grid-divider {
+            width: 100%;
+            height: 20px;
+            position: relative;
+            z-index: 1; /* Ensure it stays above any animation overflow */
+        }
+
+        .debug-coordinates .grid-cell::after {
+            content: attr(data-row) "," attr(data-col);
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .grids-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .notepad-container {
+            flex: 1;
+            max-width: 260px;
+            border: 2px solid #333;
+            background-color: #111;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            overflow-y: auto;
+            max-height: 358px;
+            padding: 10px;
+        }
+
+        .notepad-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr); /* Changed from 10 to 6 */
+            gap: 10px;
+        }
+
+        .notepad-cell {
+            width: 30px;
+            height: 30px;
+            background-color: #222;
+            border: 1px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            cursor: text;
+            position: relative;
+        }
+
+        .notepad-cell:focus {
+            outline: 2px solid #4af;
+            background-color: #333;
+        }
+
+        .notepad-cell::after {
+            content: attr(data-char);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notepad-area {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .button-grid-container {
+            margin-bottom: 15px;
+            max-width: 260px;
+            border: 2px solid #333;
+            background-color: #111;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .button-grid {
+            max-width: 260px;
+            max-height: 40px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+        }
+
+        .button-cell {
+            width: 34px;
+            height: 34px;
+            background-color: #333;
+            border: 1px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .button-cell:hover {
+            background-color: #444;
+        }
+
+        .button-cell:active {
+            background-color: #555;
+            transform: translateY(1px);
+        }
+
+        .notepad-cell.selected {
+    outline: 3px solid #4af;
+    background-color: #333;
+    z-index: 1;
+}
+
     </style>
 </head>
 <body>
-    <div class="next-elements-container" id="nextElements"></div>
-    <div class="grid-container" id="mainGrid"></div>
-    <div class="grid-container" id="bottomGrid"></div>
+    <div class="content-wrapper">
+        <div class="grids-container">
+            <div class="next-elements-container" id="nextElements"></div>
+            <div class="grid-container" id="mainGrid"></div>
+            <div class="grid-divider"></div>
+            <div class="grid-container" id="bottomGrid"></div>
+        </div>
+        <div class="notepad-area">
+            <!-- Add this new button grid container -->
+            <div class="button-grid-container">
+                <div class="button-grid" id="buttonGrid"></div>
+            </div>
+            <!-- Your existing notepad grid -->
+            <div class="notepad-container">
+                <div class="notepad-grid" id="notepadGrid"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // Button grid functionality
+        const buttonGrid = document.getElementById('buttonGrid');
+        const buttonGridCols = 6;
+        let selectedNotepadCell = null;
+        
+        function initializeSelection() {
+            const firstCell = document.querySelector('.notepad-cell');
+            if (firstCell) {
+                firstCell.classList.add('selected');
+                firstCell.focus();
+                selectedNotepadCell = firstCell;
+            }
+        }
+
+        // Track the notepad cell selection
+        document.querySelectorAll('.notepad-cell').forEach(cell => {
+            cell.addEventListener('focus', () => {
+                selectedNotepadCell = cell;
+            });
+        });
+
+        // Create button grid
+        function createButtonGrid() {
+            buttonGrid.innerHTML = '';
+            
+            // Example buttons (you can customize these)
+            const buttonChars = [
+                '🟫'
+            ];
+            
+            buttonChars.forEach((char, index) => {
+                const button = document.createElement('div');
+                button.className = 'button-cell';
+                button.textContent = char;
+                button.dataset.char = char;
+                
+                button.addEventListener('click', () => {
+                    // Fallback to first cell if none selected
+                    let targetCell = selectedNotepadCell || document.querySelector('.notepad-cell');
+                    
+                    if (targetCell) {
+                        targetCell.dataset.char = char;
+                        targetCell.focus(); // Maintain selection
+                        
+                        // Auto-advance to next cell
+                        const nextCol = (parseInt(targetCell.dataset.col) + 1) % notepadCols;
+                        const nextRow = nextCol === 0 ? parseInt(targetCell.dataset.row) + 1 : parseInt(targetCell.dataset.row);
+                        
+                        if (nextRow >= parseInt(notepadGrid.dataset.rows || notepadRows)) {
+                            addNotepadRow();
+                        }
+                        
+                        const nextCell = document.querySelector(`.notepad-cell[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                        if (nextCell) {
+                            nextCell.focus();
+                            selectedNotepadCell = nextCell;
+                        }
+                    }
+                });
+                
+                buttonGrid.appendChild(button);
+            });
+        }
+
+        // Function to add custom characters to button grid
+        function addToButtonGrid(char) {
+            const button = document.createElement('div');
+            button.className = 'button-cell';
+            button.textContent = char;
+            button.dataset.char = char;
+            
+            button.addEventListener('click', () => {
+                if (selectedNotepadCell) {
+                    selectedNotepadCell.dataset.char = char;
+                }
+            });
+            
+            buttonGrid.appendChild(button);
+        }
+
+        // Function to add character to notepad at current position
+        function addToNote(char) {
+            //console.log("ADDING:", char)
+            // Check if character already exists in button grid
+            const buttons = document.querySelectorAll('.button-cell');
+            for (const button of buttons) {
+                if (button.textContent.trim() === char.trim()) {
+                    //console.log(`"${char}" already exists in button grid`);
+                    return; // Exit if duplicate found
+                }
+            }
+            
+            // If character is new, add to button grid
+            const button = document.createElement('div');
+            button.className = 'button-cell';
+            button.textContent = char;
+            button.dataset.char = char;
+            
+            button.addEventListener('click', () => {
+                // Fallback to first cell if none selected
+                let targetCell = selectedNotepadCell || document.querySelector('.notepad-cell');
+                
+                if (targetCell) {
+                    targetCell.dataset.char = char;
+                    targetCell.focus(); // Maintain selection
+                    
+                    // Auto-advance to next cell
+                    const nextCol = (parseInt(targetCell.dataset.col) + 1) % notepadCols;
+                    const nextRow = nextCol === 0 ? parseInt(targetCell.dataset.row) + 1 : parseInt(targetCell.dataset.row);
+                    
+                    if (nextRow >= parseInt(notepadGrid.dataset.rows || notepadRows)) {
+                        addNotepadRow();
+                    }
+                    
+                    const nextCell = document.querySelector(`.notepad-cell[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                    if (nextCell) {
+                        nextCell.focus();
+                        selectedNotepadCell = nextCell;
+                    }
+                }
+            });
+            
+            buttonGrid.appendChild(button);
+        }
+
+        // Notepad functionality
+        const notepadGrid = document.getElementById('notepadGrid');
+        const notepadRows = 11; // Initial rows
+        const notepadCols = 6;
+        function pasteTextIntoCells(startCell, text) {
+            let currentRow = parseInt(startCell.dataset.row);
+            let currentCol = parseInt(startCell.dataset.col);
+            let charsPasted = 0;
+            
+            for (const char of text) {
+                // Skip if we've reached the end of the grid
+                if (currentRow >= parseInt(notepadGrid.dataset.rows || notepadRows)) break;
+                
+                const cell = document.querySelector(
+                    `.notepad-cell[data-row="${currentRow}"][data-col="${currentCol}"]`
+                );
+                
+                if (cell) {
+                    cell.dataset.char = char;
+                    charsPasted++;
+                    
+                    // Move to next cell
+                    currentCol++;
+                    if (currentCol >= notepadCols) {
+                        currentCol = 0;
+                        currentRow++;
+                        
+                        // Add new row if needed
+                        if (currentRow >= parseInt(notepadGrid.dataset.rows || notepadRows)) {
+                            addNotepadRow();
+                        }
+                    }
+                } else {
+                    break;
+                }
+            }
+            
+            // Focus on the last cell we pasted to
+            if (charsPasted > 0) {
+                const lastRow = parseInt(startCell.dataset.row) + Math.floor((parseInt(startCell.dataset.col) + charsPasted - 1) / notepadCols);
+                const lastCol = (parseInt(startCell.dataset.col) + charsPasted - 1) % notepadCols;
+                
+                const lastCell = document.querySelector(
+                    `.notepad-cell[data-row="${lastRow}"][data-col="${lastCol}"]`
+                );
+                
+                if (lastCell) {
+                    lastCell.focus();
+                }
+            }
+        }
+
+        // Create notepad grid
+        function createNotepad() {
+            notepadGrid.innerHTML = '';
+            for (let row = 0; row < notepadRows; row++) {
+                for (let col = 0; col < notepadCols; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'notepad-cell';
+                    cell.tabIndex = 0; // Make it focusable
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.dataset.char = ' '; // Initialize with space
+                    
+                    cell.addEventListener('focus', () => {
+                        // Remove selection from all cells
+                        document.querySelectorAll('.notepad-cell').forEach(c => {
+                            c.classList.remove('selected');
+                        });
+                        // Add to current cell
+                        cell.classList.add('selected');
+                        selectedNotepadCell = cell;
+                    });
+
+                    cell.addEventListener('blur', () => {
+                        // Keep visual selection even when focus is lost
+                        cell.classList.add('selected');
+                    });
+
+                    document.querySelector('.notepad-container').addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('notepad-cell')) {
+                            if (selectedNotepadCell) {
+                                selectedNotepadCell.focus();
+                            }
+                        }
+                    });
+
+                                     
+                    cell.addEventListener('keydown', (e) => {
+                        // Handle character input
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                            e.preventDefault();
+                            navigator.clipboard.readText().then(pastedText => {
+                                if (pastedText) {
+                                    pasteTextIntoCells(cell, pastedText);
+                                }
+                            }).catch(err => {
+                                console.error('Failed to read clipboard:', err);
+                            });
+                            return;
+                        } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+                            cell.dataset.char = e.key;
+                            e.preventDefault();
+                            
+                            // Move to next cell
+                            const nextCol = (parseInt(cell.dataset.col) + 1) % notepadCols;
+                            const nextRow = nextCol === 0 ? parseInt(cell.dataset.row) + 1 : parseInt(cell.dataset.row);
+                            
+                            // Add new row if needed
+                            if (nextRow >= notepadRows) {
+                                addNotepadRow();
+                            }
+                            
+                            const nextCell = document.querySelector(`.notepad-cell[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                            if (nextCell) {
+                                nextCell.focus();
+                            }
+                        }
+                        else if (e.key === 'Delete' || e.key === 'Backspace') {
+                            cell.dataset.char = ' ';
+                            e.preventDefault();
+                            
+                            const prevCol = (parseInt(cell.dataset.col) - 1 + notepadCols) % notepadCols;
+                            const prevRow = prevCol === notepadCols - 1 ? parseInt(cell.dataset.row) - 1 : parseInt(cell.dataset.row);
+                            
+                            if (prevRow >= 0) {
+                                const prevCell = document.querySelector(`.notepad-cell[data-row="${prevRow}"][data-col="${prevCol}"]`);
+                                if (prevCell) {
+                                    prevCell.focus();
+                                }
+                            }
+                        }
+                        // Handle arrow keys - just move without modifying content
+                        else if (e.key.startsWith('Arrow')) {
+                            e.preventDefault();
+                            let newRow = parseInt(cell.dataset.row);
+                            let newCol = parseInt(cell.dataset.col);
+                            
+                            switch (e.key) {
+                                case 'ArrowUp': 
+                                    newRow = Math.max(0, newRow - 1); 
+                                    break;
+                                case 'ArrowDown': 
+                                    newRow = Math.min(notepadRows - 1, newRow + 1); 
+                                    break;
+                                case 'ArrowLeft': 
+                                    newCol = Math.max(0, newCol - 1); 
+                                    break;
+                                case 'ArrowRight': 
+                                    newCol = Math.min(notepadCols - 1, newCol + 1); 
+                                    break;
+                            }
+                            
+                            const newCell = document.querySelector(`.notepad-cell[data-row="${newRow}"][data-col="${newCol}"]`);
+                            if (newCell) {
+                                newCell.focus();
+                            }
+                        }
+                        // Handle Enter - move to next line
+                        else if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const nextRow = parseInt(cell.dataset.row) + 1;
+                            const sameCol = parseInt(cell.dataset.col);
+                            
+                            if (nextRow >= notepadRows) {
+                                addNotepadRow();
+                            }
+                            
+                            const nextCell = document.querySelector(`.notepad-cell[data-row="${nextRow}"][data-col="${sameCol}"]`);
+                            if (nextCell) {
+                                nextCell.focus();
+                            }
+                        }
+                    });
+                    
+                    notepadGrid.appendChild(cell);
+                }
+            }
+        }
+
+        function addNotepadRow() {
+            const currentRows = parseInt(notepadGrid.dataset.rows || notepadRows);
+            notepadGrid.dataset.rows = currentRows + 1;
+            
+            for (let col = 0; col < notepadCols; col++) {
+                const cell = document.createElement('div');
+                cell.className = 'notepad-cell';
+                cell.tabIndex = 0;
+                cell.dataset.row = currentRows;
+                cell.dataset.col = col;
+                cell.dataset.char = ' ';
+                
+                // Add same event listeners as in createNotepad
+                cell.addEventListener('keydown', (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                        e.preventDefault();
+                        navigator.clipboard.readText().then(pastedText => {
+                            if (pastedText) {
+                                pasteTextIntoCells(cell, pastedText);
+                            }
+                        }).catch(err => {
+                            console.error('Failed to read clipboard:', err);
+                        });
+                        return;
+                    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+                        cell.dataset.char = e.key;
+                        e.preventDefault();
+                        
+                        const nextCol = (parseInt(cell.dataset.col) + 1) % notepadCols;
+                        const nextRow = nextCol === 0 ? parseInt(cell.dataset.row) + 1 : parseInt(cell.dataset.row);
+                        
+                        if (nextRow >= parseInt(notepadGrid.dataset.rows)) {
+                            addNotepadRow();
+                        }
+                        
+                        const nextCell = document.querySelector(`.notepad-cell[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                        if (nextCell) {
+                            nextCell.focus();
+                        }
+                    }
+                    else if (e.key === 'Delete' || e.key === 'Backspace') {
+                        cell.dataset.char = ' ';
+                        e.preventDefault();
+                        
+                        const prevCol = (parseInt(cell.dataset.col) - 1 + notepadCols) % notepadCols;
+                        const prevRow = prevCol === notepadCols - 1 ? parseInt(cell.dataset.row) - 1 : parseInt(cell.dataset.row);
+                        
+                        if (prevRow >= 0) {
+                            const prevCell = document.querySelector(`.notepad-cell[data-row="${prevRow}"][data-col="${prevCol}"]`);
+                            if (prevCell) {
+                                prevCell.focus();
+                            }
+                        }
+                    }
+                    else if (e.key.startsWith('Arrow')) {
+                        e.preventDefault();
+                        let newRow = parseInt(cell.dataset.row);
+                        let newCol = parseInt(cell.dataset.col);
+                        
+                        switch (e.key) {
+                            case 'ArrowUp': newRow = Math.max(0, newRow - 1); break;
+                            case 'ArrowDown': newRow = Math.min(parseInt(notepadGrid.dataset.rows) - 1, newRow + 1); break;
+                            case 'ArrowLeft': newCol = Math.max(0, newCol - 1); break;
+                            case 'ArrowRight': newCol = Math.min(notepadCols - 1, newCol + 1); break;
+                        }
+                        
+                        const newCell = document.querySelector(`.notepad-cell[data-row="${newRow}"][data-col="${newCol}"]`);
+                        if (newCell) {
+                            newCell.focus();
+                        }
+                    }
+                    else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const nextRow = parseInt(cell.dataset.row) + 1;
+                        const sameCol = parseInt(cell.dataset.col);
+                        
+                        if (nextRow >= parseInt(notepadGrid.dataset.rows)) {
+                            addNotepadRow();
+                        }
+                        
+                        const nextCell = document.querySelector(`.notepad-cell[data-row="${nextRow}"][data-col="${sameCol}"]`);
+                        if (nextCell) {
+                            nextCell.focus();
+                        }
+                    }
+                });
+                
+                notepadGrid.appendChild(cell);
+            }
+        }
+
+        // Initialize notepad
+        document.addEventListener('DOMContentLoaded', () => {
+    createNotepad();
+    createButtonGrid();
+    initializeSelection();
+});
+
         const gridSize = 6;
         let mainGrid = []; // Will store {type, bonus} objects
-        let isAnimating = false; // Animation lock flag
+        let isAnimating = false; // Animation lock flag'
         const ELEMENTS = {
             EMPTY: '',
             A: '🟫',
@@ -138,7 +786,35 @@
             E: '🔶',
             F: '🔷',
             G: '💎',
+            FA: "🪐",
+            FB: "💥",
+            FC: "🌑",
+            FD: "☄️",
+            FE: "🌍",
+            FF: "🔥",
+            FG: "🪨",
+            FH: "🌱",
+            FI: "☢️",
+            FJ: "☀️",
+            FK: "🧊",
+            FL: "❄️",
+            FM: "⚖️",
+            FN: "🌊",
+            FO: "💧",
+            FP: "⚡",
+            FQ: "🌌",
+            FR: "🌪️",
+            FS: "☣️",
+            FT: "🌈",
+            FU: "🪵",
+            FV: "🔮"
         };
+
+        const RECEITA = {
+            "FT":[
+                    {"A": 1, "B": 1, "C": 1, "D": 1}
+            ],
+        }
         
         // Define the progression order
         const ELEMENT_PROGRESSION = [
@@ -150,16 +826,12 @@
             ELEMENTS.F,
             ELEMENTS.G
         ];
-
-        const FUSIONS = {
-            A: "🪐",
-            B: "🌕",
-            C: "🌑",
-            D: "☄️",
-            E: "🌍"
-        };
         
         const MinConnections = 5;
+
+        function getElementByType(object, value) {
+            return Object.keys(object).find(key => object[key] === value);
+        }
 
         // Initialize the grid
         function initializeGrid() {
@@ -174,7 +846,7 @@
             for (let i = 0; i < gridSize; i++) {
                 const bottomCell = document.createElement('div');
                 bottomCell.className = 'grid-cell';
-                bottomCell.textContent = FUSIONS.A;
+                bottomCell.dataset.bonus = '0'; // Initialize bonus
                 bottomGridDiv.appendChild(bottomCell);
 
                 // add onclick event to bottom cell to select it, making it bobble
@@ -200,17 +872,10 @@
             for (let i = 0; i < gridSize; i++) {
                 mainGrid[i] = [];
                 for (let j = 0; j < gridSize; j++) {
-                    if (i < 4 && j === 0) {
-                        mainGrid[i][j] = {
-                            type: ELEMENTS.E,
-                            bonus: 0
-                        };
-                    } else {
-                        mainGrid[i][j] = {
-                            type: ELEMENTS.EMPTY,
-                            bonus: 0
-                        };
-                    }
+                    mainGrid[i][j] = {
+                        type: ELEMENTS.EMPTY,
+                        bonus: 0
+                    };
                     
                     // Create cell element
                     const cell = document.createElement('div');
@@ -236,6 +901,64 @@
         }
 
         // Get the next element in progression
+
+        function createDevToolbar() {
+            const toolbar = document.createElement('div');
+            toolbar.id = 'dev-toolbar';
+            toolbar.style.position = 'fixed';
+            toolbar.style.bottom = '10px';
+            toolbar.style.right = '10px';
+            toolbar.style.zIndex = '1000';
+            toolbar.style.backgroundColor = '#333';
+            toolbar.style.padding = '10px';
+            toolbar.style.borderRadius = '5px';
+            toolbar.style.color = 'white';
+            toolbar.style.display = 'flex';
+            toolbar.style.flexWrap = 'wrap';
+            toolbar.style.gap = '5px';
+
+            // Create buttons for each element in ELEMENTS
+            for (const [key, symbol] of Object.entries(ELEMENTS)) {
+            const button = document.createElement('button');
+            button.textContent = symbol;
+            button.style.padding = '5px 10px';
+            button.style.border = 'none';
+            button.style.borderRadius = '3px';
+            button.style.backgroundColor = '#555';
+            button.style.color = 'white';
+            button.style.cursor = 'pointer';
+
+            // Add click event to set the next element
+            button.addEventListener('click', () => {
+                nextElementsQueue[0] = ELEMENTS[key];
+                updateNextElementsDisplay();
+            });
+
+            toolbar.appendChild(button);
+            }
+
+            // Add button to show/hide toolbar
+            const toggleBtn = document.createElement('button');
+            toggleBtn.textContent = 'Dev Tools ▲';
+            toggleBtn.style.position = 'fixed';
+            toggleBtn.style.bottom = '0';
+            toggleBtn.style.right = '0';
+            toggleBtn.style.zIndex = '1001';
+            toggleBtn.style.padding = '5px 10px';
+            toggleBtn.style.border = 'none';
+            toggleBtn.style.borderRadius = '3px';
+            toggleBtn.style.backgroundColor = '#333';
+            toggleBtn.style.color = 'white';
+            toggleBtn.style.cursor = 'pointer';
+            toggleBtn.addEventListener('click', () => {
+            toolbar.style.display = toolbar.style.display === 'none' ? 'flex' : 'none';
+            toggleBtn.textContent = toolbar.style.display === 'none' ? 'Dev Tools ▲' : 'Dev Tools ▼';
+            });
+
+            document.body.appendChild(toolbar);
+            document.body.appendChild(toggleBtn);
+        }
+
         function getNextElement(currentElement) {
             const currentIndex = ELEMENT_PROGRESSION.indexOf(currentElement);
             if (currentIndex === -1 || currentIndex === ELEMENT_PROGRESSION.length - 1) {
@@ -274,7 +997,7 @@
                 for (let i = 0; i < sparkleCount; i++) {
                 const sparkle = document.createElement('div');
                 sparkle.className = 'sparkle';
-                sparkle.textContent = ['✨', '⭐', '⚡', '❄', '♡', '✦'][Math.floor(Math.random() * 6)];
+                sparkle.textContent = ['✨', '⭐', '💛', '💫', '🔅', '🌟'][Math.floor(Math.random() * 6)];
                 
                 // Random positioning
                 sparkle.style.left = `${Math.random() * 80 + 10}%`;
@@ -344,25 +1067,20 @@
                 }
             }
 
-            return possibleElements; // <-- This was missing!
+            return possibleElements;
         }
 
         // Generate next elements with weighted probabilities
         function getRandomElement() {
             const possibleElements = possibleElementsFunc();
             rand = Math.random() * 100; // Random integer between 0 and 99
-            //console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
-            //console.log('Picked value: ' + rand); // Debugging output
-            // pick the element that has the rand number in its weight range
             let cumulativeWeight = 0;
             for (let i = 0; i < possibleElements.length; i++) {
                 cumulativeWeight += possibleElements[i].weight;
                 if (rand <= cumulativeWeight) {
-                    //console.log('Picked element: ' + possibleElements[i].element); // Debugging output
                     return possibleElements[i].element;
                 }
             }
-            //console.log(JSON.stringify(possibleElements, null, 2)); // Debugging output
             return ELEMENT_PROGRESSION[0]; // Fallback
         }
 
@@ -391,7 +1109,17 @@
 
         // Get the next element to place and refill the queue
         function getNextElementToPlace() {
-            const elementToPlace = nextElementsQueue[0];
+            // Check if we have a dev override
+            const select = document.getElementById('dev-element-select');
+            let elementToPlace;
+            
+            if (select && select.value) {
+                elementToPlace = ELEMENTS[select.value];
+                // Reset the selection
+                select.value = '';
+            } else {
+                elementToPlace = nextElementsQueue[0];
+            }
             
             // Shift the queue and add a new element
             nextElementsQueue.shift();
@@ -401,78 +1129,465 @@
             return elementToPlace;
         }
 
+        let retirarBobble = []
         // Toggle X in a cell
-        function toggleX(row, col, cellElement) {
-            if (isAnimating) return; // Prevent clicks during animation
-            if (mainGrid[row][col].type !== ELEMENTS.EMPTY) return; // ignore clicks on non-empty cells
+        async function toggleX(row, col, cellElement) {
+            const elementChar = Object.keys(ELEMENTS).find(key => ELEMENTS[key] === mainGrid[row][col].type) || mainGrid[row][col].type;
+            if (isAnimating) return;
 
-            // check if a bottom cell is selected, if so, place the elmente from the bottom cell in the place and remove the bottom cell content
             const allBottomCells = document.querySelectorAll('#bottomGrid .grid-cell');
             let selectedBottomCell = null;
             
             allBottomCells.forEach(cell => {
                 if (cell.classList.contains('bobble-strong')) {
-                    console.log("ok");
                     selectedBottomCell = cell;
                 }
             });
 
-            if (selectedBottomCell) {
+            if (selectedBottomCell && mainGrid[row][col].type === ELEMENTS.EMPTY) {
                 const selectedElement = selectedBottomCell.textContent;
+                const selectedBonus = parseInt(selectedBottomCell.dataset.bonus) || 0;
+                
                 selectedBottomCell.classList.remove('bobble-strong');
-                selectedBottomCell.textContent = FUSIONS.A; // Reset bottom cell to default
+                selectedBottomCell.textContent = ELEMENTS.EMPTY;
+                selectedBottomCell.dataset.bonus = '0';
+                // Clear any bonus display
+                const existingBonus = selectedBottomCell.querySelector('.bonus');
+                if (existingBonus) {
+                    existingBonus.remove();
+                }
+                
+                // Place in main grid with proper bonus
+
+                // ATENÇÃO: ISSO AQUI VAI QUEBRAR EVENTUALMENTE, PODE TER CERTEZA
+
                 mainGrid[row][col] = {
-                    type: selectedElement,  // Start with first element
-                    bonus: 0
+                    type: selectedElement.replace(/\+[0-9]+$/, ''),
+                    bonus: selectedBonus
                 };
                 updateCell(row, col);
-                checkPossibleMerges(row, col, selectedElement); 
+
+                const fusionResult = checkFusions(row, col, row, col, selectedElement);
+                
+                if (fusionResult === true) {
+                    await processFusionAnimation(); // Wait for animation to complete
+                    await checkPossibleMerges(row, col, selectedElement);
+                } else if (fusionResult) {
+                    for (const item of fusionResult.queue) {
+                        const recursiveCheck = checkFusions(
+                            fusionResult.originalOrigin.r,
+                            fusionResult.originalOrigin.c, 
+                            item.cell.r,
+                            item.cell.c,
+                            item.element
+                        );
+                        if (recursiveCheck === true) {
+                            await processFusionAnimation(); // Wait for animation to complete
+                        }
+                        fusionAnimationQueue = [];
+                    }
+                };
+
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        if (mainGrid[i][j].type === ELEMENTS.EMPTY) continue;
+                        //console.log('%c CHAMANDO:','color: orange',i, j, mainGrid[i][j].type)
+                        addToNote(mainGrid[i][j].type);
+                        await checkPossibleMerges(i, j, mainGrid[i][j].type);
+                    }
+                }
             } else if (mainGrid[row][col].type === ELEMENTS.EMPTY) {
                 const elementToPlace = getNextElementToPlace();
                 mainGrid[row][col] = {
-                    type: elementToPlace,  // Start with first element
+                    type: elementToPlace,
                     bonus: 0
                 };
                 updateCell(row, col);
-                checkPossibleMerges(row, col, elementToPlace); 
-            } 
+                
+                const fusionResult = checkFusions(row, col, row, col, elementToPlace);
+                
+                if (fusionResult === true) {
+                    await processFusionAnimation(); // Wait for animation to complete
+                    await checkPossibleMerges(row, col, elementToPlace);
+                } else if (fusionResult) {
+                    for (const item of fusionResult.queue) {
+                        const recursiveCheck = checkFusions(
+                            fusionResult.originalOrigin.r,
+                            fusionResult.originalOrigin.c, 
+                            item.cell.r,
+                            item.cell.c,
+                            item.element
+                        );
+                        if (recursiveCheck === true) {
+                            await processFusionAnimation(); // Wait for animation to complete
+                        }
+                        fusionAnimationQueue = [];
+                    }
+                };
+
+
+                await  checkPossibleMerges(row, col, elementToPlace); 
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        if (mainGrid[i][j].type === ELEMENTS.EMPTY) continue;
+                        //console.log('%c CHAMANDO:','color: orange',i, j, mainGrid[i][j].type)
+                        addToNote(mainGrid[i][j].type);
+                        await checkPossibleMerges(i, j, mainGrid[i][j].type);
+                    }
+                }
+            } else if (elementChar.length > 1) {
+                const bottomGridCells = document.querySelectorAll('#bottomGrid .grid-cell');
+                for (const bottomCell of bottomGridCells) {
+                    if (bottomCell.textContent === ELEMENTS.EMPTY) {
+                        // Remove the element from the grid
+                        const removedElement = mainGrid[row][col];
+                        mainGrid[row][col] = { type: ELEMENTS.EMPTY, bonus: 0 };
+                        updateCell(row, col);
+                        
+                        // Update bottom cell with both type and bonus
+                        bottomCell.textContent = removedElement.type;
+                        bottomCell.dataset.bonus = removedElement.bonus.toString();
+                        
+                        // Update bonus display
+                        const existingBonus = bottomCell.querySelector('.bonus');
+                        if (existingBonus) {
+                            existingBonus.remove();
+                        }
+                        
+                        if (removedElement.bonus > 0) {
+                            const bonusEl = document.createElement('span');
+                            bonusEl.className = 'bonus';
+                            bonusEl.textContent = `+${removedElement.bonus}`;
+                            bottomCell.appendChild(bonusEl);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        function checkCompletedRecipe(receitaMap, fusionsQueue) {
+            // 1. Count elements in queue
+            const elementCounts = {};
+            fusionsQueue.forEach(item => {
+                elementCounts[item.element] = (elementCounts[item.element] || 0) + 1;
+            });
+            
+            //console.log("%c Current elements:", 'color: green', elementCounts);
+            
+            // 2. Check against each recipe
+            for (let i = 0; i < receitaMap.length; i++) {
+                const recipe = receitaMap[i];
+                let isMatch = true;
+                
+                // Check if recipe has same number of ingredients
+                if (Object.keys(recipe.ingredientes).length !== Object.keys(elementCounts).length) {
+                    continue;
+                }
+                
+                // Check exact quantities match
+                for (const [element, count] of Object.entries(recipe.ingredientes)) {
+                    if (elementCounts[element] !== count) {
+                        isMatch = false;
+                        break;
+                    }
+                }
+                
+                if (isMatch) {
+                    //console.log("%c Found matching recipe at index:", 'color: blue' , receitaMap[i]);
+                    return receitaMap[i]; // Return recipe position
+                }
+            }
+            
+            return false; // No match found
+        }
+
+
+        let fusionAnimationQueue = [];
+        function checkFusions(originalRow, originalCol, currentRow, currentCol, ELEMENT) {
+            // MANTER REGISTRO DO ITEM MATRIZ
+            const currentKey = { r: currentRow, c: currentCol };
+            const origElementKey = Object.keys(ELEMENTS).find(key => ELEMENTS[key] === ELEMENT) || ELEMENT;
+
+            // PROCURA AS RECEITAS QUE POSSUEM O ELEMENT NA RECEITA
+            let receitaMap = [];
+            for (const [receitaKey, receitaValue] of Object.entries(RECEITA)) {
+                receitaValue.forEach((ingredientes, index) => {
+                    for (const [ingrediente, quantidade] of Object.entries(ingredientes)) {
+                        if (ingrediente === origElementKey) {
+                            receitaMap.push({
+                                fusion: receitaKey,
+                                variante: index,
+                                ingredientes: ingredientes
+                            });
+                        }
+                    }
+                });
+            }
+
+            const directions = [
+                { r: -1, c: 0 }, { r: 1, c: 0 },
+                { r: 0, c: -1 }, { r: 0, c: 1 }
+            ];
+
+            // INICIALIZA A MATRIZ DE CONEXÕES E VIZINHOS
+            let fusionsQueue = [{
+                element: origElementKey,
+                checks: [...directions],
+                cell: currentKey // Start from CURRENT position
+            }];
+
+            // INICIO DOS CHECKS DE TODAS CELULA VIZINHAS
+            let recursionActive = true;
+            // SIMPLIFICA O ELEMENTO ATUAL EM UMA VARIAVEL
+            
+            while(recursionActive){
+                //console.log("recursion state:", recursionActive);
+                let currentElement = null;
+
+                const fusionFinished = checkCompletedRecipe(receitaMap, fusionsQueue)
+                if (fusionFinished){
+                    //console.log('%c ACABOU', 'color: red');
+
+                    fusionAnimationQueue.push({
+                        fusao: fusionFinished,
+                        raiz: { r: originalRow, c: originalCol }, // Final position
+                        queue: [...fusionsQueue]                  // All connected cells
+                    });
+                    break;
+                }
+                
+                // 1. SAFELY find first element with checks
+                for (let i = 0; i < fusionsQueue.length; i++) {
+                    if (fusionsQueue[i]?.checks?.length > 0) {  // Optional chaining
+                        currentElement = fusionsQueue[i];
+                        break;
+                    }
+                }
+
+                // 2. SAFE termination check
+                if (!currentElement?.checks) {  // Checks both null AND undefined
+                    recursionActive = false;
+                    continue;
+                }
+                for (let i = 0; i < currentElement.checks.length; i++) {
+                    
+                    const dir = currentElement.checks[i];
+                    const newCell = { 
+                        r: currentElement.cell.r + dir.r, 
+                        c: currentElement.cell.c + dir.c 
+                    };
+
+                    currentElement.checks.splice(i, 1);
+                    i--;
+
+                    if (
+                        newCell.r >= gridSize ||
+                        newCell.r < 0 ||
+                        newCell.c >= gridSize ||
+                        newCell.c < 0 ||
+                        fusionsQueue.some(item =>  // Check if cell is already in queue
+                            item.cell.r === newCell.r && 
+                            item.cell.c === newCell.c
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    const newElement = getElementByType(ELEMENTS, mainGrid[newCell.r][newCell.c].type);
+
+                    // CHECA SE EXISTE EM ALGUMA RECEITA
+
+                    const isElementInRecipe = receitaMap.some(recipe => 
+                        newElement in recipe.ingredientes
+                    );
+
+
+                    //console.log("ELEMENT AT: " + newCell.r, newCell.c + " IS " + newElement)
+                    //console.log(isElementInRecipe)
+                    if (isElementInRecipe){
+                        //console.log("fusions queue: ", JSON.parse(JSON.stringify(fusionsQueue)));
+                        fusionsQueue.unshift({
+                            element: newElement,
+                            checks: [...directions],
+                            cell: newCell
+                        });
+                        break;
+                    }
+                }
+            }
+
+            if (fusionAnimationQueue.length > 0) {
+                // When storing animation, use ORIGINAL position for placement
+                fusionAnimationQueue[fusionAnimationQueue.length - 1].raiz = { 
+                    r: originalRow, 
+                    c: originalCol 
+                };
+                return true;
+            } else if (fusionsQueue.length > 0) {
+                return {
+                    queue: fusionsQueue,
+                    originalOrigin: { r: originalRow, c: originalCol } // Preserve origin
+                };
+            }
+            return false;
+        }
+
+        function processFusionAnimation() {
+            return new Promise((resolve) => {
+                if (fusionAnimationQueue.length === 0 || isAnimating) {
+                    resolve(false);
+                    return;
+                }
+            
+            const { fusao, raiz, queue } = fusionAnimationQueue.shift();
+            isAnimating = true;
+            let totalBonus = 0
+            
+            // 1. Animate removal of all queued elements (except root)
+            queue.filter(item => !(item.cell.r === raiz.r && item.cell.c === raiz.c))
+                .forEach((item, index) => {
+                    setTimeout(() => {
+                        // Remove element with bounce animation
+                        const cellEl = document.querySelector(
+                            `.grid-cell[data-row="${item.cell.r}"][data-col="${item.cell.c}"]`
+                        );
+                        cellEl.classList.add('bounce-animation');
+
+                        totalBonus = queue.reduce((sum, item) => {
+                            return sum + (mainGrid[item.cell.r][item.cell.c]?.bonus || 0);
+                        }, 0);
+                        
+                        setTimeout(() => {
+                            mainGrid[item.cell.r][item.cell.c] = {
+                                type: ELEMENTS.EMPTY,
+                                bonus: 0
+                            };
+                            updateCell(item.cell.r, item.cell.c);
+                            cellEl.classList.remove('bounce-animation');
+                        }, 300); // Match animation duration
+                    }, index * 150); // Staggered removal
+                });
+            
+            // 2. After all removed, process root cell
+            setTimeout(() => {
+                // Remove root with special animation
+                const rootEl = document.querySelector(
+                    `.grid-cell[data-row="${raiz.r}"][data-col="${raiz.c}"]`
+                );
+                rootEl.classList.add('bounce-animation');
+                
+                setTimeout(() => {
+                    // Create fusion result
+                    mainGrid[raiz.r][raiz.c] = {
+                        type: ELEMENTS[fusao.fusion],
+                        bonus: totalBonus  // Bonus based on fusion size
+                    };
+                    updateCell(raiz.r, raiz.c);
+                    
+                    // Create shockwave from fusion point
+                    createShockwave(raiz.r, raiz.c);
+
+                    isAnimating = false;
+                    resolve(true);
+                }, 400);
+            }, queue.length * 120);
+            });
+        }
+
+        function createShockwave(startRow, startCol) {
+            const maxDistance = gridSize * 2;
+            let propagatedCells = new Set();
+            let currentDistance = 1;
+            propagatedCells.add(`${startRow},${startCol}`);
+            let hasCreatedAnyWave = false;
+
+            const createWaveAtDistance = (distance) => {
+                const waveCells = [];
+                const directions = [
+                    { r: -1, c: 0 }, { r: 1, c: 0 },
+                    { r: 0, c: -1 }, { r: 0, c: 1 }
+                ];
+
+                const currentCells = Array.from(propagatedCells).map(cell => {
+                    const [row, col] = cell.split(',').map(Number);
+                    return { row, col };
+                });
+
+                for (const cel of currentCells) {
+                    for (let dir of directions) {
+                        let row = cel.row + dir.r;
+                        let col = cel.col + dir.c;
+                        let key = `${row},${col}`;
+                        if (!propagatedCells.has(key) &&
+                            row >= 0 && row < gridSize &&
+                            col >= 0 && col < gridSize) {
+                            propagatedCells.add(key);
+                            waveCells.push({row, col});
+                        }
+                    }
+                }
+
+                if (waveCells.length > 0) {
+                    hasCreatedAnyWave = true;
+                    waveCells.forEach(({row, col}) => {
+                        const cellEl = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
+                        if (cellEl) {
+                            cellEl.classList.add('bounce-animation');
+                            setTimeout(() => {
+                                cellEl.classList.remove('bounce-animation');
+                            }, 400);
+                        }
+                    });
+                }
+
+                currentDistance++;
+                
+                if ((waveCells.length === 0 && hasCreatedAnyWave) || currentDistance > maxDistance) {
+                    return; // Just end without resolving anything
+                } else {
+                    setTimeout(() => createWaveAtDistance(currentDistance), 200);
+                }
+            };
+
+            createWaveAtDistance(currentDistance);
         }
 
         // Check for possible merges
-        function checkPossibleMerges(startRow, startCol, ELEMENT) {
-            isAnimating = false; // Unlock animation
-            if (mainGrid[startRow][startCol].type !== ELEMENT) return;
+        async function checkPossibleMerges(startRow, startCol, ELEMENT) {
+            if (isAnimating) return false;
+            const elementChar = Object.keys(ELEMENTS).find(key => ELEMENTS[key] === ELEMENT) || ELEMENT;
+            if (ELEMENT && elementChar.length > 1) return false;
 
             const visited = new Set();
             const queue = [{ row: startRow, col: startCol }];
             const connected = [];
 
+            // BFS to find connected cells
             while (queue.length > 0) {
                 const { row, col } = queue.shift();
                 const key = `${row},${col}`;
+                
                 if (visited.has(key)) continue;
-
                 visited.add(key);
-                connected.push({ row, col });
+                
+                if (mainGrid[row][col].type === ELEMENT) {
+                    connected.push({ row, col });
+                    
+                    const directions = [
+                        { r: -1, c: 0 }, { r: 1, c: 0 },
+                        { r: 0, c: -1 }, { r: 0, c: 1 }
+                    ];
 
-                const directions = [
-                    { r: -1, c: 0 }, // Up
-                    { r: 1, c: 0 },  // Down
-                    { r: 0, c: -1 }, // Left
-                    { r: 0, c: 1 }   // Right
-                ];
+                    for (let dir of directions) {
+                        const newRow = row + dir.r;
+                        const newCol = col + dir.c;
 
-                for (let dir of directions) {
-                    const newRow = row + dir.r;
-                    const newCol = col + dir.c;
-
-                    if (
-                        newRow >= 0 && newRow < gridSize &&
-                        newCol >= 0 && newCol < gridSize &&
-                        mainGrid[newRow][newCol].type === ELEMENT &&
-                        !visited.has(`${newRow},${newCol}`)
-                    ) {
-                        queue.push({ row: newRow, col: newCol });
+                        if (newRow >= 0 && newRow < gridSize &&
+                            newCol >= 0 && newCol < gridSize &&
+                            !visited.has(`${newRow},${newCol}`)) {
+                            queue.push({ row: newRow, col: newCol });
+                        }
                     }
                 }
             }
@@ -482,54 +1597,91 @@
                     const cellEl = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
                     cellEl.classList.add(connected.length >= 4 ? 'bobble-strong' : 'bobble-light');
                 });
+            } else {
+                connected.forEach(({ row, col }) => {
+                    const cellEl = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
+                    cellEl.classList.remove('bobble-light', 'bobble-strong');
+                });
             }
 
             if (connected.length >= MinConnections) {
-                isAnimating = true; // Lock animation
-                // Calculate total bonus from all merged cells
+                isAnimating = true;
+                
+                // Calculate total bonus
                 let totalBonus = connected.reduce((sum, {row, col}) => {
                     return sum + mainGrid[row][col].bonus;
                 }, 0);
-                
-                // Additional bonus from extra connections
                 totalBonus += connected.length - MinConnections;
 
-                // First pass: Clear all cells (starting from end)
-                connected.slice().reverse().forEach(({ row, col }, index) => {
-                    setTimeout(() => {
-                        mainGrid[row][col] = {
-                            type: ELEMENTS.EMPTY,
-                            bonus: 0
-                        };
-                        let cellEl = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
-                        cellEl.classList.remove('bobble-light', 'bobble-strong');
-                        updateCell(row, col);
-                    }, index * 100);
+                // Clear all connected cells
+                await new Promise(resolve => {
+                    connected.slice().reverse().forEach(({ row, col }, index) => {
+                        setTimeout(() => {
+                            mainGrid[row][col] = { type: ELEMENTS.EMPTY, bonus: 0 };
+                            const cellEl = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
+                            cellEl.classList.remove('bobble-light', 'bobble-strong');
+                            updateCell(row, col);
+                        }, index * 100);
+                    });
+                    
+                    setTimeout(resolve, connected.length * 100);
                 });
 
-                // Second pass: Convert first cell after all clears finish
-                setTimeout(() => {
-                    const first = connected[0];
-                    const newType = getNextElement(ELEMENT);
+                // Convert first cell
+                const first = connected[0];
+                const newType = getNextElement(ELEMENT);
+                
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        mainGrid[first.row][first.col] = {
+                            type: newType,
+                            bonus: totalBonus
+                        };
+                        updateCell(first.row, first.col);
+                        isAnimating = false;
+                        resolve(true);
+                    }, 100);
+                });
 
-                    mainGrid[first.row][first.col] = {
-                        type: newType,
-                        bonus: totalBonus
-                    };
-                    let cellEl = document.querySelector(`.grid-cell[data-row="${first.row}"][data-col="${first.col}"]`);
-                    cellEl.classList.remove('bobble-light', 'bobble-strong');
-                    updateCell(first.row, first.col);
-                    
-                    // Check for new possible merges (unless it's the final element)
-                    if (ELEMENT_PROGRESSION.indexOf(newType) < ELEMENT_PROGRESSION.length - 1) {
-                        checkPossibleMerges(first.row, first.col, newType);
+                let fusionResult = checkFusions(first.row, first.col, first.row, first.col, newType);
+                
+                if (fusionResult === true) {
+                    await processFusionAnimation(); // Wait for animation to complete
+                    await checkPossibleMerges(first.row, first.col, mainGrid[first.row][first.col].type);
+                } else if (fusionResult) {
+                    for (const item of fusionResult.queue) {
+                        const recursiveCheck = checkFusions(
+                            fusionResult.originalOrigin.r,
+                            fusionResult.originalOrigin.c, 
+                            item.cell.r,
+                            item.cell.c,
+                            item.element
+                        );
+                        if (recursiveCheck === true) {
+                            await processFusionAnimation(); // Wait for animation to complete
+                        }
+                        fusionAnimationQueue = [];
                     }
-                }, connected.length * 100);
+                };
+
+                checkPossibleMerges(first.row, first.col, mainGrid[first.row][first.col].type)
+
+
+                return true;
             }
+            
+            return false;
         }
 
         // Initialize on page load
+        function toggleDebugMode() {
+            document.body.classList.toggle('debug-coordinates');
+            createDevToolbar();
+        }
+
+        // Add to your initialization
         initializeGrid();
+        toggleDebugMode(); // Start with debug on
     </script>
 </body>
 </html>
